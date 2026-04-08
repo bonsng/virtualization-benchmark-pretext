@@ -1,4 +1,16 @@
 node_modules/
 dist/
-docs/design.md
 docs/superpowers/
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Vite
+*.local
+
+# Logs
+*.log

@@ -25,9 +25,9 @@ export class AutoBenchmark {
     this.controlPanel.startButton.disabled = true
     this.controlPanel.startButton.textContent = '⏳ 측정 중...'
 
-    // 자동 스크롤 + 메트릭 수집
-    const scrollStep = 2 // px per frame
+    // 자동 스크롤 + 메트릭 수집: viewport 절반씩 스크롤
     const container = this.scrollContainer
+    const scrollStep = Math.max(Math.floor(container.clientHeight / 2), 100)
 
     const tick = (timestamp: number) => {
       if (!this.running) return

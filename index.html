@@ -6,20 +6,20 @@
   <title>Virtualization Benchmark</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e1e4e8; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
-    p { color: #8b949e; margin-bottom: 2rem; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: rgb(248, 245, 239); color: #2c2c2c; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; color: #1a1a1a; }
+    p { color: #6b6b6b; margin-bottom: 2rem; }
     .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; max-width: 600px; width: 100%; padding: 0 1rem; }
-    .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.5rem; text-decoration: none; color: #e1e4e8; transition: border-color 0.2s; }
-    .card:hover { border-color: #58a6ff; }
-    .card h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .card { background: #fff; border: 1px solid #e0ddd7; border-radius: 8px; padding: 1.5rem; text-decoration: none; color: #2c2c2c; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
+    .card:hover { transform: translateY(-4px); border-color: #b0aba2; box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+    .card h2 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #1a1a1a; }
     .card p { font-size: 0.85rem; margin-bottom: 0; }
-    .card.dashboard { grid-column: span 2; border-color: #238636; }
+    .card.dashboard { grid-column: span 2; border-color: #4a9c5e; }
   </style>
 </head>
 <body>
   <h1>Virtualization Benchmark</h1>
-  <p>채팅 가상화 방식 비교 벤치마크</p>
+  <p>DOM 없이 텍스트 레이아웃을 계산하는 Pretext가 가상화에서 얼마나 차이를 만드는지,<br>세 가지 방식으로 직접 비교해봅니다.</p>
   <div class="cards">
     <a class="card" href="/src/no-virtualization/">
       <h2>No Virtualization</h2>

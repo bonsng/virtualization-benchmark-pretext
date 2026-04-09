@@ -59,7 +59,13 @@ export function createControlPanel(callbacks: ControlPanelCallbacks): ControlPan
   const mountDisplay = createMetricSpan('', '')
   metricsDiv.append(fpsDisplay.wrapper, domDisplay.wrapper, memoryDisplay.wrapper)
 
-  container.append(countSelect, scenarioSelect, startButton, metricsDiv)
+  // Home link
+  const homeLink = document.createElement('a')
+  homeLink.href = '/'
+  homeLink.textContent = '← Home'
+  homeLink.style.cssText = 'color:#4a9c5e;text-decoration:none;font-size:13px;font-weight:500;margin-right:4px'
+
+  container.append(homeLink, countSelect, scenarioSelect, startButton, metricsDiv)
 
   return {
     container,

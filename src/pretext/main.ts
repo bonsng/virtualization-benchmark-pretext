@@ -1,7 +1,7 @@
 import type { MessageCount, Scenario, BenchmarkConfig } from '@shared/types'
-import { createControlPanel, updateMetrics, type ControlPanelElements } from '@shared/control-panel'
-import { MetricsCollector, countDomNodes, getMemoryUsage } from '@shared/metrics'
-import { AutoBenchmark } from '@shared/benchmark'
+import { benchmarkKey } from '@shared/types'
+import { createControlPanel, updateMetrics, showStatus, type ControlPanelElements } from '@shared/control-panel'
+import { BenchmarkRunner, doubleRaf, type BenchmarkCallbacks } from '@shared/benchmark-runner'
 import {
   createPreparedChatTemplates,
   buildConversationFrame,
@@ -17,8 +17,6 @@ let scenario: Scenario = 'fixed'
 let frame: ConversationFrame | null = null
 let prevChatWidth = 0
 let controlPanel: ControlPanelElements
-let benchmark: AutoBenchmark | null = null
-const metrics = new MetricsCollector()
 
 // DOM
 const app = document.getElementById('app')!
@@ -27,42 +25,27 @@ scrollContainer.className = 'chat-container'
 app.appendChild(scrollContainer)
 
 const renderer = new ChatRenderer(scrollContainer)
-
-// Prepare templates (expensive, once)
 const templates = createPreparedChatTemplates()
 
 // Control panel
 controlPanel = createControlPanel({
   onCountChange: (c) => { count = c; reload() },
   onScenarioChange: (s) => { scenario = s; reload() },
-  onBenchmarkStart: () => benchmark?.start(),
+  onBenchmarkStart: () => runBenchmark(),
 })
 document.body.prepend(controlPanel.container)
 
 function reload(): void {
-  const start = performance.now()
-
   if (scenario === 'fixed') {
     messageCount = count
   } else {
     messageCount = 100
   }
-
   renderer.clear()
   frame = null
   prevChatWidth = 0
   scrollContainer.scrollTop = 0
   render()
-
-  requestAnimationFrame(() => {
-    const mountTime = performance.now() - start
-    metrics.setMountTime(mountTime)
-    updateMetrics(controlPanel, 0, countDomNodes(), null, mountTime)
-  })
-
-  const config: BenchmarkConfig = { mode: 'pretext', count, scenario }
-  benchmark?.stop()
-  benchmark = new AutoBenchmark(scrollContainer, controlPanel, config)
 }
 
 function render(): void {
@@ -105,25 +88,32 @@ function scheduleRender(): void {
 
 scrollContainer.addEventListener('scroll', scheduleRender, { passive: true })
 window.addEventListener('resize', () => {
-  const start = performance.now()
   frame = null
   prevChatWidth = 0
   render()
-  metrics.setResizeTime(performance.now() - start)
 })
 
-// 실시간 메트릭
-function metricsLoop(ts: number): void {
-  metrics.recordFrame(ts)
-  metrics.recordDomNodes(countDomNodes())
-  const mem = getMemoryUsage()
-  if (mem !== null) metrics.recordMemory(mem)
-  const r = metrics.getResults()
-  updateMetrics(controlPanel, r.avgFps, r.peakDomNodes,
-    r.memoryPeak !== null ? r.memoryPeak / 1024 / 1024 : null, r.mountTime)
-  requestAnimationFrame(metricsLoop)
+function runBenchmark(): void {
+  const callbacks: BenchmarkCallbacks = {
+    reload: () => reload(),
+    waitForPaint: () => doubleRaf(),
+    getScrollContainer: () => scrollContainer,
+    onProgress: (status) => {
+      controlPanel.startButton.textContent = `⏳ ${status}`
+    },
+  }
+
+  const config: BenchmarkConfig = { mode: 'pretext', count, scenario }
+  const runner = new BenchmarkRunner(callbacks, config)
+
+  controlPanel.startButton.disabled = true
+  runner.run().then(result => {
+    controlPanel.startButton.disabled = false
+    controlPanel.startButton.textContent = '▶ 벤치마크 시작'
+    updateMetrics(controlPanel, result.mountTime, result.peakDomNodes, result.resizeTime)
+    showStatus(`저장 완료: ${benchmarkKey(config)}`)
+  })
 }
-requestAnimationFrame(metricsLoop)
 
 // 초기 로드
 reload()

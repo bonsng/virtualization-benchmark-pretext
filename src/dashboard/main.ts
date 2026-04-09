@@ -8,7 +8,7 @@ const app = document.getElementById('app')!
 app.innerHTML = `
   <div class="dashboard">
     <header class="dashboard-header">
-      <a href="/" class="back-link">&larr; 돌아가기</a>
+      <a href="${import.meta.env.BASE_URL}" class="back-link">&larr; 돌아가기</a>
       <h1>Benchmark Dashboard</h1>
       <p class="subtitle">3 rounds 평균 · ${new Date().toLocaleDateString('ko-KR')}</p>
     </header>

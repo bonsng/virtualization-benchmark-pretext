@@ -61,7 +61,7 @@ export function createControlPanel(callbacks: ControlPanelCallbacks): ControlPan
 
   // Home link
   const homeLink = document.createElement('a')
-  homeLink.href = '/'
+  homeLink.href = import.meta.env.BASE_URL
   homeLink.textContent = '← Home'
   homeLink.style.cssText = 'color:#4a9c5e;text-decoration:none;font-size:13px;font-weight:500;margin-right:4px'
 

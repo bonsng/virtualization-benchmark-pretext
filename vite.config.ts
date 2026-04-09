@@ -4,6 +4,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import { resolve } from 'path'
 
 export default defineConfig({
+  base: '/virtualization-benchmark-pretext/',
   plugins: [react(), tsconfigPaths()],
   resolve: {
     alias: {

@@ -13,13 +13,14 @@ export function App() {
   const containerRef = useRef<HTMLDivElement>(null)
   const controlPanelRef = useRef<ControlPanelElements | null>(null)
   const paintResolveRef = useRef<(() => void) | null>(null)
+  const runBenchmarkRef = useRef<() => void>(() => {})
 
   // 컨트롤 패널 마운트 (한 번)
   useEffect(() => {
     const panel = createControlPanel({
       onCountChange: setCount,
       onScenarioChange: setScenario,
-      onBenchmarkStart: () => runBenchmark(),
+      onBenchmarkStart: () => runBenchmarkRef.current(),
     })
     document.body.prepend(panel.container)
     controlPanelRef.current = panel
@@ -83,6 +84,8 @@ export function App() {
       showStatus(`저장 완료: ${benchmarkKey(config)}`)
     })
   }, [count, scenario])
+
+  runBenchmarkRef.current = runBenchmark
 
   return (
     <div className="chat-container" ref={containerRef} onScroll={handleScroll}>

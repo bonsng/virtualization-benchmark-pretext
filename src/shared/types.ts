@@ -7,24 +7,25 @@ export interface MessageData {
   id: number
   role: 'user' | 'assistant'
   markdown: string
-  html: string // marked로 파싱된 HTML
+  html: string
 }
 
 export type MessageCount = 1000 | 5000 | 10000
 export type Scenario = 'fixed' | 'infinite'
 export type Mode = 'no-virtualization' | 'react-virtual' | 'pretext'
 
+export interface RoundResult {
+  mountTime: number
+  peakDomNodes: number
+  resizeTime: number
+}
+
 export interface BenchmarkResult {
   timestamp: number
-  mountTime: number
-  avgFps: number
-  minFps: number
-  frameDrops: number
-  peakDomNodes: number
-  memoryPeak: number | null
-  resizeTime: number
-  insertTime: number | null       // 무한 스크롤 전용
-  scrollbarJumps: number | null   // 무한 스크롤 전용
+  rounds: number
+  mountTime: number       // 중앙값 ms
+  peakDomNodes: number    // 중앙값
+  resizeTime: number      // 중앙값 ms
 }
 
 export interface BenchmarkConfig {

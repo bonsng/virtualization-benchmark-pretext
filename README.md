@@ -86,3 +86,7 @@ src/
 - **UI:** React 19, Vanilla DOM
 - **Virtualization:** @tanstack/react-virtual, @chenglou/pretext
 - **Markdown:** marked
+
+## Reference
+
+- [Pretext Markdown Chat Demo](https://chenglou.me/pretext/markdown-chat/) — pretext의 공식 마크다운 채팅 데모. 이 프로젝트의 pretext 모드 구현 참고 대상

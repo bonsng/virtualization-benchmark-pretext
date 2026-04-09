@@ -1,5 +1,16 @@
-import { describe, it, expect, vi } from 'vitest'
+// @vitest-environment jsdom
+import { describe, it, expect, vi, beforeAll } from 'vitest'
 import { median, BenchmarkRunner, type BenchmarkCallbacks } from '../../src/shared/benchmark-runner'
+
+beforeAll(() => {
+  const store: Record<string, string> = {}
+  vi.stubGlobal('localStorage', {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => { store[key] = value },
+    removeItem: (key: string) => { delete store[key] },
+    clear: () => { Object.keys(store).forEach(k => delete store[k]) },
+  })
+})
 
 describe('median', () => {
   it('returns middle value for odd-length array', () => {

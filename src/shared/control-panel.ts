@@ -53,11 +53,11 @@ export function createControlPanel(callbacks: ControlPanelCallbacks): ControlPan
   // Metrics display
   const metricsDiv = document.createElement('div')
   metricsDiv.className = 'metrics'
-  const fpsDisplay = createMetricSpan('FPS', '—')
+  const fpsDisplay = createMetricSpan('Mount', '—')
   const domDisplay = createMetricSpan('DOM', '—')
-  const memoryDisplay = createMetricSpan('Memory', '—')
-  const mountDisplay = createMetricSpan('Mount', '—')
-  metricsDiv.append(fpsDisplay.wrapper, domDisplay.wrapper, memoryDisplay.wrapper, mountDisplay.wrapper)
+  const memoryDisplay = createMetricSpan('Resize', '—')
+  const mountDisplay = createMetricSpan('', '')
+  metricsDiv.append(fpsDisplay.wrapper, domDisplay.wrapper, memoryDisplay.wrapper)
 
   container.append(countSelect, scenarioSelect, startButton, metricsDiv)
 
@@ -85,15 +85,14 @@ function createMetricSpan(label: string, initial: string) {
 
 export function updateMetrics(
   els: ControlPanelElements,
-  fps: number,
-  domNodes: number,
-  memoryMB: number | null,
   mountMs: number,
+  domNodes: number,
+  resizeMs: number,
 ): void {
-  els.fpsDisplay.textContent = String(Math.round(fps))
+  els.fpsDisplay.textContent = `${mountMs.toFixed(1)}ms`
   els.domDisplay.textContent = domNodes.toLocaleString()
-  els.memoryDisplay.textContent = memoryMB !== null ? `${Math.round(memoryMB)}MB` : 'N/A'
-  els.mountDisplay.textContent = `${mountMs.toFixed(1)}ms`
+  els.memoryDisplay.textContent = `${resizeMs.toFixed(1)}ms`
+  els.mountDisplay.textContent = ''
 }
 
 export function showStatus(message: string): void {

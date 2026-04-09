@@ -2,9 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { generateMessages, loadNextBatch } from '@shared/data'
 import type { MessageCount, Scenario, MessageData, BenchmarkConfig } from '@shared/types'
-import { createControlPanel, updateMetrics, type ControlPanelElements } from '@shared/control-panel'
-import { MetricsCollector, countDomNodes, getMemoryUsage } from '@shared/metrics'
-import { AutoBenchmark } from '@shared/benchmark'
+import { benchmarkKey } from '@shared/types'
+import { createControlPanel, updateMetrics, showStatus, type ControlPanelElements } from '@shared/control-panel'
+import { BenchmarkRunner, type BenchmarkCallbacks } from '@shared/benchmark-runner'
 import { ChatBubble } from '../no-virtualization/ChatBubble'
 
 export function App() {
@@ -13,37 +13,36 @@ export function App() {
   const [scenario, setScenario] = useState<Scenario>('fixed')
   const containerRef = useRef<HTMLDivElement>(null)
   const controlPanelRef = useRef<ControlPanelElements | null>(null)
-  const benchmarkRef = useRef<AutoBenchmark | null>(null)
-  const metricsRef = useRef(new MetricsCollector())
+  const paintResolveRef = useRef<(() => void) | null>(null)
 
-  // 컨트롤 패널
   useEffect(() => {
     const panel = createControlPanel({
       onCountChange: setCount,
       onScenarioChange: setScenario,
-      onBenchmarkStart: () => benchmarkRef.current?.start(),
+      onBenchmarkStart: () => runBenchmark(),
     })
     document.body.prepend(panel.container)
     controlPanelRef.current = panel
     return () => panel.container.remove()
   }, [])
 
-  // 데이터 생성
   useEffect(() => {
-    const start = performance.now()
     if (scenario === 'fixed') {
       setMessages(generateMessages(count))
     } else {
       setMessages(generateMessages(100))
     }
-    requestAnimationFrame(() => {
-      const mountTime = performance.now() - start
-      metricsRef.current.setMountTime(mountTime)
-      if (controlPanelRef.current) {
-        updateMetrics(controlPanelRef.current, 0, countDomNodes(), null, mountTime)
-      }
-    })
   }, [count, scenario])
+
+  // paint 완료 감지
+  useEffect(() => {
+    if (paintResolveRef.current) {
+      requestAnimationFrame(() => {
+        paintResolveRef.current?.()
+        paintResolveRef.current = null
+      })
+    }
+  }, [messages])
 
   const virtualizer = useVirtualizer({
     count: messages.length,
@@ -52,15 +51,6 @@ export function App() {
     overscan: 5,
   })
 
-  // AutoBenchmark
-  useEffect(() => {
-    if (!containerRef.current || !controlPanelRef.current) return
-    const config: BenchmarkConfig = { mode: 'react-virtual', count, scenario }
-    benchmarkRef.current = new AutoBenchmark(containerRef.current, controlPanelRef.current, config)
-    return () => benchmarkRef.current?.stop()
-  }, [count, scenario])
-
-  // 무한 스크롤
   const handleScroll = useCallback(() => {
     if (scenario !== 'infinite') return
     const el = containerRef.current
@@ -70,34 +60,39 @@ export function App() {
     }
   }, [scenario])
 
-  // 실시간 FPS
-  useEffect(() => {
-    const collector = metricsRef.current
-    let rafId: number
-    const tick = (ts: number) => {
-      collector.recordFrame(ts)
-      collector.recordDomNodes(countDomNodes())
-      const mem = getMemoryUsage()
-      if (mem !== null) collector.recordMemory(mem)
-      if (controlPanelRef.current) {
-        const r = collector.getResults()
-        updateMetrics(controlPanelRef.current, r.avgFps, r.peakDomNodes,
-          r.memoryPeak !== null ? r.memoryPeak / 1024 / 1024 : null, r.mountTime)
-      }
-      rafId = requestAnimationFrame(tick)
+  const runBenchmark = useCallback(() => {
+    if (!containerRef.current || !controlPanelRef.current) return
+    const panel = controlPanelRef.current
+
+    const callbacks: BenchmarkCallbacks = {
+      reload: () => {
+        setMessages(generateMessages(count))
+      },
+      waitForPaint: () => new Promise<void>(resolve => {
+        paintResolveRef.current = resolve
+      }),
+      getScrollContainer: () => containerRef.current!,
+      onProgress: (status) => {
+        panel.startButton.textContent = `⏳ ${status}`
+      },
     }
-    rafId = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafId)
-  }, [])
+
+    const config: BenchmarkConfig = { mode: 'react-virtual', count, scenario }
+    const runner = new BenchmarkRunner(callbacks, config)
+
+    panel.startButton.disabled = true
+    runner.run().then(result => {
+      panel.startButton.disabled = false
+      panel.startButton.textContent = '▶ 벤치마크 시작'
+      updateMetrics(panel, result.mountTime, result.peakDomNodes, result.resizeTime)
+      showStatus(`저장 완료: ${benchmarkKey(config)}`)
+    })
+  }, [count, scenario])
 
   const items = virtualizer.getVirtualItems()
 
   return (
-    <div
-      className="chat-container"
-      ref={containerRef}
-      onScroll={handleScroll}
-    >
+    <div className="chat-container" ref={containerRef} onScroll={handleScroll}>
       <div
         style={{
           height: `${virtualizer.getTotalSize()}px`,

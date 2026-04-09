@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@chenglou/pretext": "^0.0.4",
+    "@chenglou/pretext": "0.0.5",
     "@tanstack/react-virtual": "^3.13.0",
     "marked": "^15.0.0",
     "react": "^19.0.0",

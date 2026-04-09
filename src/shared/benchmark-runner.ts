@@ -13,7 +13,7 @@ export interface BenchmarkCallbacks {
 }
 
 export function doubleRaf(): Promise<void> {
-  return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+  return new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
 }
 
 export function median(values: number[]): number {

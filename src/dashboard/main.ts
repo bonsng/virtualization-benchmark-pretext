@@ -1,17 +1,7 @@
-interface BenchmarkResult {
-  label: string
-  mountTime: number
-  peakDomNodes: number
-  resizeTime: number
-}
+import { benchmarkData } from '@shared/benchmark-data'
 
-const results: BenchmarkResult[] = [
-  { label: 'No Virtualization', mountTime: 301.7, peakDomNodes: 36176, resizeTime: 75 },
-  { label: 'React Virtual', mountTime: 59.9, peakDomNodes: 113, resizeTime: 16.5 },
-  { label: 'Pretext', mountTime: 16.4, peakDomNodes: 143, resizeTime: 16.6 },
-]
-
-const colors = ['#e07a5f', '#3d85c6', '#4a9c5e']
+const results = benchmarkData.map(d => ({ label: d.label, ...d.result }))
+const colors = benchmarkData.map(d => d.color)
 
 const app = document.getElementById('app')!
 

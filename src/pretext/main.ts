@@ -72,11 +72,16 @@ function scheduleRender(): void {
   if (scheduledRaf !== null) return
   scheduledRaf = requestAnimationFrame(() => {
     scheduledRaf = null
+
+    // DOM 읽기를 쓰기(render) 전에 수행하여 강제 레이아웃 방지
+    const scrollTop = scrollContainer.scrollTop
+    const viewportHeight = scrollContainer.clientHeight
+
     render()
 
     if (scenario === 'infinite') {
-      const el = scrollContainer
-      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+      // frame.totalHeight 사용 — DOM의 scrollHeight 조회 없이 판단
+      if (scrollTop + viewportHeight >= frame!.totalHeight - 100) {
         messageCount += 50
         frame = null
         prevChatWidth = 0
